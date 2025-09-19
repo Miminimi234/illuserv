@@ -219,8 +219,8 @@ app.get('/health', (_req, res) => {
     // Try to get actual service status
     try {
         // Check if analytics service is available globally
-        if (globalThis.analyticsServiceStatus) {
-            serviceStatus.analytics = globalThis.analyticsServiceStatus;
+        if ((globalThis as any).analyticsServiceStatus) {
+            serviceStatus.analytics = (globalThis as any).analyticsServiceStatus;
         }
         if ((globalThis as any).jupiterServiceStatus) {
             serviceStatus.jupiterService = (globalThis as any).jupiterServiceStatus;

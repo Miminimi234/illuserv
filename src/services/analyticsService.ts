@@ -214,6 +214,11 @@ export class AnalyticsService {
         
         // Set global status
         (globalThis as any).analyticsServiceStatus = 'running';
+        
+        // Start cleanup interval
+        setInterval(() => {
+            this.cleanupOldData();
+        }, 60 * 60 * 1000); // Clean up every hour
     }
 
     // Stop the analytics service

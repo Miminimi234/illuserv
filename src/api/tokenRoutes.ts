@@ -206,7 +206,7 @@ router.get('/search', async (req: Request, res: Response) => {
 });
 
 // GET /tokens/jupiter - Get latest Jupiter tokens
-router.get('/jupiter', async (req: Request, res: Response) => {
+router.get('/jupiter', async (_req: Request, res: Response) => {
     try {
         const tokens = await jupiterService.getLatestTokens();
         
@@ -225,7 +225,7 @@ router.get('/jupiter', async (req: Request, res: Response) => {
 });
 
 // GET /tokens/jupiter/status - Get Jupiter service status
-router.get('/jupiter/status', (req: Request, res: Response) => {
+router.get('/jupiter/status', (_req: Request, res: Response) => {
     try {
         const status = jupiterService.getStatus();
         
