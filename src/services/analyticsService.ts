@@ -212,6 +212,9 @@ export class AnalyticsService {
         this.isRunning = true;
         logger.info('✅ Analytics Service: Started with in-memory storage');
         
+        // Clean up old data on start
+        this.cleanupOldData();
+        
         // Set global status
         (globalThis as any).analyticsServiceStatus = 'running';
     }

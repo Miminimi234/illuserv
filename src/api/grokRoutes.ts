@@ -511,13 +511,13 @@ router.get('/conversation/:conversationId', async (req, res) => {
       return res.status(404).json({ error: 'Conversation not found' });
     }
     
-    res.json({
+    return res.json({
       success: true,
       data: conversation
     });
   } catch (error) {
     logger.error('Error getting conversation:', error);
-    res.status(500).json({ error: 'Failed to get conversation' });
+    return res.status(500).json({ error: 'Failed to get conversation' });
   }
 });
 
@@ -531,18 +531,18 @@ router.delete('/conversation/:conversationId', async (req, res) => {
       return res.status(500).json({ error: 'Failed to delete conversation' });
     }
     
-    res.json({
+    return res.json({
       success: true,
       message: 'Conversation deleted successfully'
     });
   } catch (error) {
     logger.error('Error deleting conversation:', error);
-    res.status(500).json({ error: 'Failed to delete conversation' });
+    return res.status(500).json({ error: 'Failed to delete conversation' });
   }
 });
 
 // Test endpoint to verify Firebase conversation storage
-router.post('/test-conversation', async (req, res) => {
+router.post('/test-conversation', async (req, res): Promise<any> => {
   try {
     const { sessionId, message } = req.body;
     
@@ -576,7 +576,7 @@ router.post('/test-conversation', async (req, res) => {
     const db = require('../config/firebase').getFirebaseDatabase();
     await db.ref(`conversations/${testConversation.id}`).set(testConversation);
     
-    res.json({
+    return res.json({
       success: true,
       message: 'Test conversation saved to Firebase',
       conversationId: testConversation.id,
@@ -584,7 +584,7 @@ router.post('/test-conversation', async (req, res) => {
     });
   } catch (error) {
     logger.error('Test conversation error:', error);
-    res.status(500).json({ error: 'Failed to save test conversation' });
+    return res.status(500).json({ error: 'Failed to save test conversation' });
   }
 });
 

@@ -51,13 +51,13 @@ export class MintWatcherService {
             // Subscribe to Token Program logs
             this.subscriptionId = this.connection.onLogs(
                 TOKEN_PROGRAM_ID,
-                async (logs) => {
+                async (logs: any) => {
                     try {
                         if (logs.err) return;
                         
                         // Check if this is an InitializeMint instruction
                         const hasInitializeMint = logs.logs.some(
-                            (log) => log.includes("Instruction: InitializeMint") || log.includes("Instruction: InitializeMint2")
+                            (log: any) => log.includes("Instruction: InitializeMint") || log.includes("Instruction: InitializeMint2")
                         );
                         
                         if (hasInitializeMint) {

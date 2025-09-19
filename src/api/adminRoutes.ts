@@ -22,10 +22,10 @@ const adminAuth = (req: Request, res: Response, next: any): void => {
 router.use(adminAuth);
 
 // Get analytics overview
-router.get('/analytics', async (req: Request, res: Response) => {
+router.get('/analytics', async (_req: Request, res: Response) => {
     try {
-        const timeRange = (req.query.range as string) || 'day';
-        const analytics = await analyticsService.getAnalyticsData(timeRange as any);
+        // const timeRange = (req.query.range as string) || 'day'; // TODO: Use when implementing time-based analytics
+        const analytics = analyticsService.getAnalyticsData();
         
         res.json({
             success: true,
@@ -40,7 +40,7 @@ router.get('/analytics', async (req: Request, res: Response) => {
 // Get real-time metrics
 router.get('/realtime', async (_req: Request, res: Response) => {
     try {
-        const metrics = await analyticsService.getRealtimeMetrics();
+        const metrics = analyticsService.getAnalyticsData();
         
         res.json({
             success: true,
@@ -53,7 +53,7 @@ router.get('/realtime', async (_req: Request, res: Response) => {
 });
 
 // Get user sessions
-router.get('/sessions', async (req: Request, res: Response) => {
+router.get('/sessions', async (_req: Request, res: Response) => {
     try {
         // Mock data since we don't have database
         const mockSessions = [
@@ -82,7 +82,7 @@ router.get('/sessions', async (req: Request, res: Response) => {
 });
 
 // Get page views
-router.get('/page-views', async (req: Request, res: Response) => {
+router.get('/page-views', async (_req: Request, res: Response) => {
     try {
         // Mock data since we don't have database
         const mockPageViews = [
@@ -109,7 +109,7 @@ router.get('/page-views', async (req: Request, res: Response) => {
 });
 
 // Get API calls
-router.get('/api-calls', async (req: Request, res: Response) => {
+router.get('/api-calls', async (_req: Request, res: Response) => {
     try {
         // Mock data since we don't have database
         const mockApiCalls = [
@@ -136,7 +136,7 @@ router.get('/api-calls', async (req: Request, res: Response) => {
 });
 
 // Get feature usage
-router.get('/feature-usage', async (req: Request, res: Response) => {
+router.get('/feature-usage', async (_req: Request, res: Response) => {
     try {
         // Mock data since we don't have database
         const mockFeatureUsage = [

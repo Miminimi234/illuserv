@@ -32,7 +32,7 @@ class DatabaseConnection {
         });
 
         // Handle pool errors
-        this.pool.on('error', (err) => {
+        this.pool.on('error', (err: Error) => {
             console.error('Unexpected error on idle client', err);
             // Don't exit the process, just log the error and continue
             // The pool will handle reconnection automatically
@@ -139,7 +139,7 @@ class DatabaseConnection {
         try {
             console.log('Recreating database pool...');
             if (this.pool && !this.pool.ended) {
-                this.pool.end().catch(e => console.error('Error ending old pool:', e));
+                this.pool.end().catch((e: any) => console.error('Error ending old pool:', e));
             }
         } catch (error) {
             console.error('Error closing old pool:', error);
@@ -169,7 +169,7 @@ class DatabaseConnection {
         });
 
         // Re-add event listeners
-        this.pool.on('error', (err) => {
+        this.pool.on('error', (err: Error) => {
             console.error('Unexpected error on idle client', err);
         });
 
