@@ -22,7 +22,7 @@ const adminAuth = (req: Request, res: Response, next: any): void => {
 router.use(adminAuth);
 
 // Get analytics overview
-router.get('/analytics', async (req: Request, res: Response) => {
+router.get('/analytics', async (_req: Request, res: Response) => {
     try {
         const analytics = analyticsService.getAnalyticsData();
         
