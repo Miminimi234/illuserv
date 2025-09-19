@@ -15,6 +15,13 @@ export const initializeFirebase = (): admin.app.App => {
     return firebaseApp;
   }
 
+  // Log current environment variables (without sensitive data)
+  logger.info('🔍 Checking Firebase environment variables...');
+  logger.info(`FIREBASE_PROJECT_ID: ${process.env.FIREBASE_PROJECT_ID ? 'SET' : 'MISSING'}`);
+  logger.info(`FIREBASE_DATABASE_URL: ${process.env.FIREBASE_DATABASE_URL ? 'SET' : 'MISSING'}`);
+  logger.info(`FIREBASE_PRIVATE_KEY: ${process.env.FIREBASE_PRIVATE_KEY ? 'SET' : 'MISSING'}`);
+  logger.info(`FIREBASE_CLIENT_EMAIL: ${process.env.FIREBASE_CLIENT_EMAIL ? 'SET' : 'MISSING'}`);
+
   // Validate required environment variables
   const requiredVars = ['FIREBASE_PROJECT_ID', 'FIREBASE_DATABASE_URL'];
   const missingVars = requiredVars.filter(varName => !process.env[varName]);
@@ -63,12 +70,17 @@ export const getFirebaseApp = (): admin.app.App => {
 };
 
 export const getFirebaseDatabase = (): admin.database.Database => {
-  const app = getFirebaseApp();
-  return app.database();
+  try {
+    const app = getFirebaseApp();
+    return app.database();
+  } catch (error) {
+    logger.error('❌ Failed to get Firebase database:', error);
+    throw error;
+  }
 };
 
 // Firebase Realtime Database paths
-export const FIREBASE_PATHS = {
+export const FIREBASE_PATHS = {         
   JUPITER_TOKENS: 'jupiter_tokens',
   RECENT_TOKENS: 'jupiter_tokens/recent',
   METADATA: 'jupiter_tokens/metadata',
