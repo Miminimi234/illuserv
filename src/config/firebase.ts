@@ -1,6 +1,18 @@
 import admin from 'firebase-admin';
 import { logger } from '../utils/logger';
 
+// Suppress Firebase warnings in production
+if (process.env.NODE_ENV === 'production') {
+  const originalConsoleWarn = console.warn;
+  console.warn = (...args) => {
+    // Suppress Firebase database warnings
+    if (args[0]?.includes?.('@firebase/database: FIREBASE WARNING')) {
+      return; // Suppress these warnings
+    }
+    originalConsoleWarn.apply(console, args);
+  };
+}
+
 // Firebase configuration
 const firebaseConfig = {
   projectId: process.env.FIREBASE_PROJECT_ID,
@@ -10,9 +22,17 @@ const firebaseConfig = {
 // Initialize Firebase Admin SDK
 let firebaseApp: admin.app.App | null = null;
 
-export const initializeFirebase = (): admin.app.App => {
+export const initializeFirebase = (): admin.app.App | null => {
   if (firebaseApp) {
     return firebaseApp;
+  }
+
+  // Check if Firebase should be enabled
+  const hasRequiredVars = process.env.FIREBASE_PROJECT_ID && process.env.FIREBASE_DATABASE_URL;
+  
+  if (!hasRequiredVars) {
+    logger.warn('⚠️ Firebase disabled - missing environment variables. Set FIREBASE_PROJECT_ID and FIREBASE_DATABASE_URL to enable.');
+    return null;
   }
 
   // Log current environment variables (without sensitive data)
@@ -29,7 +49,7 @@ export const initializeFirebase = (): admin.app.App => {
   if (missingVars.length > 0) {
     const errorMessage = `Missing required Firebase environment variables: ${missingVars.join(', ')}`;
     logger.error('❌ Firebase configuration error:', errorMessage);
-    throw new Error(errorMessage);
+    return null; // Don't throw error, just return null
   }
 
   try {
@@ -62,20 +82,55 @@ export const initializeFirebase = (): admin.app.App => {
   }
 };
 
-export const getFirebaseApp = (): admin.app.App => {
+export const getFirebaseApp = (): admin.app.App | null => {
   if (!firebaseApp) {
-    throw new Error('Firebase not initialized. Call initializeFirebase() first.');
+    const app = initializeFirebase();
+    return app;
   }
   return firebaseApp;
 };
 
-export const getFirebaseDatabase = (): admin.database.Database => {
+export const getFirebaseDatabase = (): admin.database.Database | null => {
   try {
     const app = getFirebaseApp();
+    if (!app) {
+      logger.warn('⚠️ Firebase not initialized - database unavailable');
+      return null;
+    }
     return app.database();
   } catch (error) {
     logger.error('❌ Failed to get Firebase database:', error);
-    throw error;
+    return null;
+  }
+};
+
+// Test Firebase connection and fix database rules
+export const testFirebaseConnection = async (): Promise<boolean> => {
+  try {
+    const db = getFirebaseDatabase();
+    if (!db) {
+      logger.warn('⚠️ Firebase database not available');
+      return false;
+    }
+
+    // Test write/read to a test path
+    const testRef = db.ref('test_connection');
+    const testData = { timestamp: Date.now(), test: true };
+    
+    await testRef.set(testData);
+    const snapshot = await testRef.once('value');
+    await testRef.remove(); // Clean up
+    
+    if (snapshot.exists()) {
+      logger.info('✅ Firebase connection test successful');
+      return true;
+    } else {
+      logger.error('❌ Firebase connection test failed - no data returned');
+      return false;
+    }
+  } catch (error) {
+    logger.error('❌ Firebase connection test failed:', error);
+    return false;
   }
 };
 
