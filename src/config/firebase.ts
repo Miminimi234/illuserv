@@ -70,6 +70,10 @@ export const initializeFirebase = (): admin.app.App | null => {
       });
     } else if (process.env.FIREBASE_PRIVATE_KEY && process.env.FIREBASE_CLIENT_EMAIL) {
       // Fallback to service account credentials
+      if (!firebaseConfig.projectId) {
+        throw new Error('FIREBASE_PROJECT_ID is required for service account authentication');
+      }
+      
       const serviceAccount = {
         project_id: firebaseConfig.projectId,
         private_key: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
@@ -86,7 +90,7 @@ export const initializeFirebase = (): admin.app.App | null => {
       });
       
       firebaseApp = admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount),
+        credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
         databaseURL: firebaseConfig.databaseURL,
       });
     } else {
