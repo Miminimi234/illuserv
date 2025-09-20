@@ -28,7 +28,7 @@ export class OracleService {
   private lastAgentIndex = 0;
   private sessionId: string;
   private readonly agents = ['analyzer', 'predictor', 'quantum-eraser', 'retrocausal'];
-  private readonly MESSAGE_INTERVAL = 2000; // 2 seconds
+  private readonly MESSAGE_INTERVAL = 8000; // 8 seconds
   // private readonly MAX_MESSAGES = 100; // Keep last 100 messages - unused for now
 
   private constructor() {
@@ -63,7 +63,7 @@ export class OracleService {
       }
     }, this.MESSAGE_INTERVAL);
 
-    logger.info('✅ Oracle service started - generating messages every 2 seconds');
+    logger.info('✅ Oracle service started - generating messages every 8 seconds');
   }
 
   public stopOracle(): void {
