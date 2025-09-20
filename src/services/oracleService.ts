@@ -87,6 +87,10 @@ export class OracleService {
   private async initializeSession(): Promise<void> {
     try {
       const db = getFirebaseDatabase();
+      if (!db) {
+        logger.warn('Firebase database not available - using default session');
+        return;
+      }
       const sessionRef = db.ref(`oracle-session/${this.sessionId}`);
       const snapshot = await sessionRef.once('value');
       
@@ -205,6 +209,10 @@ export class OracleService {
   private async saveMessage(message: OracleMessage): Promise<void> {
     try {
       const db = getFirebaseDatabase();
+      if (!db) {
+        logger.warn('Firebase database not available - message not saved');
+        return;
+      }
       await db.ref(`oracle-messages/${message.id}`).set(message);
     } catch (error) {
       logger.error('Error saving Oracle message:', error);
@@ -214,6 +222,10 @@ export class OracleService {
   private async getRecentMessages(limit: number): Promise<OracleMessage[]> {
     try {
       const db = getFirebaseDatabase();
+      if (!db) {
+        logger.warn('Firebase database not available - returning empty messages');
+        return [];
+      }
       const snapshot = await db.ref('oracle-messages')
         .orderByChild('timestamp')
         .limitToLast(limit)
@@ -230,6 +242,10 @@ export class OracleService {
   private async getCurrentSession(): Promise<OracleSession | null> {
     try {
       const db = getFirebaseDatabase();
+      if (!db) {
+        logger.warn('Firebase database not available - returning null session');
+        return null;
+      }
       const snapshot = await db.ref(`oracle-session/${this.sessionId}`).once('value');
       return snapshot.val();
     } catch (error) {
@@ -241,6 +257,10 @@ export class OracleService {
   private async updateSession(message: OracleMessage): Promise<void> {
     try {
       const db = getFirebaseDatabase();
+      if (!db) {
+        logger.warn('Firebase database not available - session not updated');
+        return;
+      }
       const sessionRef = db.ref(`oracle-session/${this.sessionId}`);
       
       await sessionRef.update({
@@ -258,6 +278,10 @@ export class OracleService {
   public async getMessages(limit: number = 20): Promise<OracleMessage[]> {
     try {
       const db = getFirebaseDatabase();
+      if (!db) {
+        logger.warn('Firebase database not available - returning empty messages');
+        return [];
+      }
       const snapshot = await db.ref('oracle-messages')
         .orderByChild('timestamp')
         .limitToLast(limit)
@@ -275,6 +299,10 @@ export class OracleService {
   public async clearMessages(): Promise<void> {
     try {
       const db = getFirebaseDatabase();
+      if (!db) {
+        logger.warn('Firebase database not available - cannot clear messages');
+        return;
+      }
       await db.ref('oracle-messages').remove();
       
       // Reset session

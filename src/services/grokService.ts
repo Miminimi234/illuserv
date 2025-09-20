@@ -99,6 +99,10 @@ export class GrokService {
 
     try {
       const db = getFirebaseDatabase();
+      if (!db) {
+        logger.warn('Firebase database not available - conversation not saved');
+        return;
+      }
       await db.ref(`conversations/${conversation.id}`).set(conversation);
       logger.debug(`Saved conversation ${conversation.id} to Firebase`);
     } catch (error) {
@@ -114,6 +118,10 @@ export class GrokService {
 
     try {
       const db = getFirebaseDatabase();
+      if (!db) {
+        logger.warn('Firebase database not available - returning null conversation');
+        return null;
+      }
       const snapshot = await db.ref(`conversations/${conversationId}`).once('value');
       return snapshot.val();
     } catch (error) {
@@ -130,6 +138,10 @@ export class GrokService {
 
     try {
       const db = getFirebaseDatabase();
+      if (!db) {
+        logger.warn('Firebase database not available - returning empty conversations');
+        return [];
+      }
       const snapshot = await db.ref('conversations')
         .orderByChild('sessionId')
         .equalTo(sessionId)
@@ -151,6 +163,10 @@ export class GrokService {
 
     try {
       const db = getFirebaseDatabase();
+      if (!db) {
+        logger.warn('Firebase database not available - returning empty conversations');
+        return [];
+      }
       const snapshot = await db.ref('conversations')
         .orderByChild('tokenMint')
         .equalTo(tokenMint)
@@ -497,6 +513,10 @@ export class GrokService {
 
     try {
       const db = getFirebaseDatabase();
+      if (!db) {
+        logger.warn('Firebase database not available - cannot delete conversation');
+        return false;
+      }
       await db.ref(`conversations/${conversationId}`).remove();
       logger.debug(`Deleted conversation ${conversationId} from Firebase`);
       return true;
