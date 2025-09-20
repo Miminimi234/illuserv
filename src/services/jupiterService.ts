@@ -238,12 +238,20 @@ export class JupiterService {
   constructor() {
     try {
       initializeFirebase();
-      this.database = getFirebaseDatabase();
+      // Don't get database here - get it lazily when needed
+      this.database = null;
       logger.info('🚀 Jupiter Service initialized');
     } catch (error) {
       logger.error('❌ Failed to initialize Jupiter Service:', error);
       throw error;
     }
+  }
+
+  private getDatabase() {
+    if (!this.database) {
+      this.database = getFirebaseDatabase();
+    }
+    return this.database;
   }
 
   /**
@@ -620,12 +628,17 @@ export class JupiterService {
       });
 
       // Store in Firebase
-      await this.database.ref(FIREBASE_PATHS.RECENT_TOKENS).set({
-        timestamp: now,
-        total_count: tokens.length,
-        filtered_count: Object.keys(tokensObject).length,
-        tokens: tokensObject
-      });
+      const database = this.getDatabase();
+      if (database) {
+        await database.ref(FIREBASE_PATHS.RECENT_TOKENS).set({
+          timestamp: now,
+          total_count: tokens.length,
+          filtered_count: Object.keys(tokensObject).length,
+          tokens: tokensObject
+        });
+      } else {
+        logger.warn('⚠️ Firebase database not available - skipping token storage');
+      }
 
       logger.debug(`📊 Stored ${Object.keys(tokensObject).length} tokens in Firebase with comprehensive data`);
     } catch (error) {
@@ -646,7 +659,12 @@ export class JupiterService {
         status: 'active'
       };
 
-      await this.database.ref(FIREBASE_PATHS.METADATA).set(metadata);
+      const database = this.getDatabase();
+      if (database) {
+        await database.ref(FIREBASE_PATHS.METADATA).set(metadata);
+      } else {
+        logger.warn('⚠️ Firebase database not available - skipping metadata update');
+      }
     } catch (error) {
       logger.error('❌ Error updating metadata:', error);
     }
@@ -664,7 +682,12 @@ export class JupiterService {
         status: this.errorCount > 10 ? 'error' : 'active'
       };
 
-      await this.database.ref(FIREBASE_PATHS.METADATA).set(metadata);
+      const database = this.getDatabase();
+      if (database) {
+        await database.ref(FIREBASE_PATHS.METADATA).set(metadata);
+      } else {
+        logger.warn('⚠️ Firebase database not available - skipping error metadata update');
+      }
     } catch (error) {
       logger.error('❌ Error updating error metadata:', error);
     }
@@ -686,7 +709,13 @@ export class JupiterService {
    */
   public async getLatestTokens(): Promise<TransformedToken[]> {
     try {
-      const snapshot = await this.database.ref(FIREBASE_PATHS.RECENT_TOKENS).once('value');
+      const database = this.getDatabase();
+      if (!database) {
+        logger.warn('⚠️ Firebase database not available - returning empty tokens');
+        return [];
+      }
+      
+      const snapshot = await database.ref(FIREBASE_PATHS.RECENT_TOKENS).once('value');
       const data = snapshot.val();
       
       if (!data || !data.tokens) {

@@ -249,6 +249,7 @@ export class JupiterWebSocketService {
   private setupFirebaseListener(): void {
     try {
       this.firebaseListener = this.database.ref(FIREBASE_PATHS.RECENT_TOKENS).on('value', (snapshot: any) => {
+        if (!snapshot) return;
         const data = snapshot.val();
         
         if (data) {

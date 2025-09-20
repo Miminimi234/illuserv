@@ -13,11 +13,7 @@ if (process.env.NODE_ENV === 'production') {
   };
 }
 
-// Firebase configuration
-const firebaseConfig = {
-  projectId: process.env.FIREBASE_PROJECT_ID,
-  databaseURL: process.env.FIREBASE_DATABASE_URL,
-};
+// Firebase configuration - moved inside function to ensure env vars are loaded
 
 // Initialize Firebase Admin SDK
 let firebaseApp: admin.app.App | null = null;
@@ -26,6 +22,12 @@ export const initializeFirebase = (): admin.app.App | null => {
   if (firebaseApp) {
     return firebaseApp;
   }
+
+  // Firebase configuration - created here to ensure env vars are loaded
+  const firebaseConfig = {
+    projectId: process.env.FIREBASE_PROJECT_ID,
+    databaseURL: process.env.FIREBASE_DATABASE_URL,
+  };
 
   // Check if Firebase should be enabled
   const hasRequiredVars = process.env.FIREBASE_PROJECT_ID && process.env.FIREBASE_DATABASE_URL;
@@ -41,6 +43,13 @@ export const initializeFirebase = (): admin.app.App | null => {
   logger.info(`FIREBASE_DATABASE_URL: ${process.env.FIREBASE_DATABASE_URL ? 'SET' : 'MISSING'}`);
   logger.info(`FIREBASE_PRIVATE_KEY: ${process.env.FIREBASE_PRIVATE_KEY ? 'SET' : 'MISSING'}`);
   logger.info(`FIREBASE_CLIENT_EMAIL: ${process.env.FIREBASE_CLIENT_EMAIL ? 'SET' : 'MISSING'}`);
+  
+  // Debug: Log the actual values
+  logger.info('🔍 Firebase Config Object:', {
+    projectId: firebaseConfig.projectId,
+    databaseURL: firebaseConfig.databaseURL,
+    projectIdType: typeof firebaseConfig.projectId
+  });
 
   // Validate required environment variables
   const requiredVars = ['FIREBASE_PROJECT_ID', 'FIREBASE_DATABASE_URL'];
@@ -62,10 +71,20 @@ export const initializeFirebase = (): admin.app.App | null => {
     } else if (process.env.FIREBASE_PRIVATE_KEY && process.env.FIREBASE_CLIENT_EMAIL) {
       // Fallback to service account credentials
       const serviceAccount = {
-        projectId: firebaseConfig.projectId,
-        privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
-        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+        project_id: firebaseConfig.projectId,
+        private_key: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+        client_email: process.env.FIREBASE_CLIENT_EMAIL,
       };
+      
+      // Debug: Log the service account object structure
+      logger.info('🔍 Service Account Object:', {
+        hasProjectId: !!serviceAccount.project_id,
+        projectIdValue: serviceAccount.project_id,
+        hasPrivateKey: !!serviceAccount.private_key,
+        hasClientEmail: !!serviceAccount.client_email,
+        keys: Object.keys(serviceAccount)
+      });
+      
       firebaseApp = admin.initializeApp({
         credential: admin.credential.cert(serviceAccount),
         databaseURL: firebaseConfig.databaseURL,

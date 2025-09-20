@@ -527,7 +527,27 @@ export class GrokService {
   }
 }
 
-export const grokService = new GrokService();
+// Lazy-loaded grokService to ensure environment variables are loaded first
+let _grokService: GrokService | null = null;
+
+export const getGrokService = (): GrokService => {
+  if (!_grokService) {
+    _grokService = new GrokService();
+  }
+  return _grokService;
+};
+
+// For backward compatibility
+export const grokService = {
+  get generateCompanionResponse() { return getGrokService().generateCompanionResponse.bind(getGrokService()); },
+  get analyzeToken() { return getGrokService().analyzeToken.bind(getGrokService()); },
+  get chatCompletion() { return getGrokService().chatCompletion.bind(getGrokService()); },
+  get analyzeRetrocausality() { return getGrokService().analyzeRetrocausality.bind(getGrokService()); },
+  get getConversationHistory() { return getGrokService().getConversationHistory.bind(getGrokService()); },
+  get getTokenConversations() { return getGrokService().getTokenConversations.bind(getGrokService()); },
+  get getConversationById() { return getGrokService().getConversationById.bind(getGrokService()); },
+  get deleteConversation() { return getGrokService().deleteConversation.bind(getGrokService()); },
+};
 
 // Export the attachment announcement helper for UI
 export { formatAttachmentAnnouncement } from './oraclePrompt';
