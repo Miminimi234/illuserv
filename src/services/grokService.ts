@@ -193,14 +193,25 @@ export class GrokService {
       return null;
     }
 
-    // Check cache first for speed
-    const cacheKey = this.getCacheKey(messages);
-    if (cacheKey) {
-      const cached = this.getCachedResponse(cacheKey);
-      if (cached) {
-        logger.debug('Returning cached response for faster performance');
-        return cached;
+    // Skip cache for Oracle responses to prevent repetition
+    const isOracleRequest = messages.some(msg => 
+      msg.content.includes('oracle debate') || 
+      msg.content.includes('YOUR PROJECT TOKEN') ||
+      msg.content.includes('CONTEXTUAL AWARENESS RULES')
+    );
+    
+    if (!isOracleRequest) {
+      // Check cache first for speed (only for non-Oracle requests)
+      const cacheKey = this.getCacheKey(messages);
+      if (cacheKey) {
+        const cached = this.getCachedResponse(cacheKey);
+        if (cached) {
+          logger.debug('Returning cached response for faster performance');
+          return cached;
+        }
       }
+    } else {
+      logger.debug('Skipping cache for Oracle response to prevent repetition');
     }
 
     try {
@@ -226,7 +237,7 @@ export class GrokService {
           model,
           stream: false,
           temperature,
-          max_tokens: 500
+          max_tokens: 150 // Reduced from 500 to 150 for shorter responses
         }),
         signal: controller.signal,
       });
@@ -254,9 +265,18 @@ export class GrokService {
           return null;
         }
         
-        // Cache the response for future use
-        if (cacheKey) {
-          this.setCachedResponse(cacheKey, responseText);
+        // Cache the response for future use (only for non-Oracle requests)
+        const isOracleRequest = messages.some(msg => 
+          msg.content.includes('oracle debate') || 
+          msg.content.includes('YOUR PROJECT TOKEN') ||
+          msg.content.includes('CONTEXTUAL AWARENESS RULES')
+        );
+        
+        if (!isOracleRequest) {
+          const cacheKey = this.getCacheKey(messages);
+          if (cacheKey) {
+            this.setCachedResponse(cacheKey, responseText);
+          }
         }
         
         return responseText;
@@ -355,7 +375,7 @@ export class GrokService {
     ];
 
     // Use lower temperature for more consistent, shorter responses
-    const temperature = isOracleConversation ? 0.9 : 0.3;
+    const temperature = isOracleConversation ? 0.7 : 0.3; // Reduced from 0.9 to 0.7
     let response = await this.chatCompletion(messages, 'grok-3', temperature);
     
     if (!response) {
