@@ -459,41 +459,6 @@ Continue this oracle debate with contextual awareness, self-reflection, and natu
     return `Current Focus: ${randomTopic}`;
   }
 
-  private generateMockTokenData(): any {
-    // Generate realistic mock token data for oracle conversations
-    const tokenNames = [
-      'Quantum Oracle', 'DeFi Nexus', 'Crypto Vault', 'Blockchain Bridge', 
-      'Token Matrix', 'Digital Oracle', 'Crypto Nexus', 'Blockchain Oracle',
-      'DeFi Oracle', 'Crypto Bridge', 'Token Vault', 'Digital Nexus'
-    ];
-    
-    const symbols = ['QOR', 'DFN', 'CVT', 'BBR', 'TMX', 'DOR', 'CNX', 'BOR', 'DFO', 'CBR', 'TVT', 'DNX'];
-    
-    const randomIndex = Math.floor(Math.random() * tokenNames.length);
-    const name = tokenNames[randomIndex];
-    const symbol = symbols[randomIndex];
-    
-    // Generate realistic market data
-    const marketcap = Math.random() * 10000000 + 100000; // $100K to $10M
-    const price_usd = Math.random() * 0.01 + 0.001; // $0.001 to $0.011
-    const volume_24h = Math.random() * 500000 + 10000; // $10K to $500K
-    const liquidity = Math.random() * 2000000 + 50000; // $50K to $2M
-    
-    return {
-      name: name,
-      symbol: symbol,
-      mint: `oracle-${symbol.toLowerCase()}-${Date.now()}`,
-      status: 'active',
-      marketcap: Math.floor(marketcap),
-      price_usd: parseFloat(price_usd.toFixed(8)),
-      volume_24h: Math.floor(volume_24h),
-      liquidity: Math.floor(liquidity),
-      created_at: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(), // Random date within last 30 days
-      source: 'oracle_simulation',
-      decimals: 9,
-      supply: Math.floor(1000000000 + Math.random() * 9000000000) // 1B to 10B supply
-    };
-  }
 
   private getSelfResponseInstructions(currentAgent: string, recentMessages: OracleMessage[]): string {
     // Check if this agent has spoken recently
@@ -527,8 +492,6 @@ Continue this oracle debate with contextual awareness, self-reflection, and natu
 
   private getContinuityInstructions(previousAgent: string, currentAgent: string, recentMessages: OracleMessage[]): string {
     const messageCount = recentMessages.length;
-    const timeSinceLastMessage = recentMessages.length > 0 ? 
-      Math.floor((Date.now() - recentMessages[recentMessages.length - 1].timestamp) / 1000) : 0;
 
     // Different continuity strategies based on conversation state
     if (messageCount < 3) {
@@ -668,10 +631,10 @@ CONVERSATION FLOW:
     return `CONVERSATION STATE: ${state.toUpperCase()}
 FOCUS: ${focus.toUpperCase()}
 CONTEXT: ${messageCount} messages, ${previousAgent} just spoke
-YOUR TASK: ${this.getTaskForAgent(currentAgent, state, focus, previousAgent)}`;
+YOUR TASK: ${this.getTaskForAgent(currentAgent, state)}`;
   }
 
-  private getTaskForAgent(agent: string, state: string, focus: string, previousAgent: string): string {
+  private getTaskForAgent(agent: string, state: string): string {
     const tasks = {
       'analyzer': {
         'opening': 'Start with technical analysis of current token metrics',
@@ -731,12 +694,13 @@ YOUR TASK: ${this.getTaskForAgent(currentAgent, state, focus, previousAgent)}`;
         const newTopic = topics[0];
         const topicHistory = session.topicHistory || [];
         
-        await this.updateSession({
-          ...session,
+        const updateData: any = {
           currentTopic: newTopic,
           lastTopicChange: currentTime,
           topicHistory: [...topicHistory.slice(-4), newTopic] // Keep last 5 topics
-        });
+        };
+        
+        await this.updateSession(updateData);
         
         logger.debug(`🔄 Oracle topic changed to: ${newTopic}`);
       }
@@ -777,12 +741,13 @@ YOUR TASK: ${this.getTaskForAgent(currentAgent, state, focus, previousAgent)}`;
 
       const topicHistory = session.topicHistory || [];
       
-      await this.updateSession({
-        ...session,
+      const updateData: any = {
         currentTopic: topic,
         lastTopicChange: Date.now(),
         topicHistory: [...topicHistory.slice(-4), topic]
-      });
+      };
+      
+      await this.updateSession(updateData);
       
       logger.info(`🎯 Oracle conversation topic set to: ${topic}`);
     } catch (error) {
