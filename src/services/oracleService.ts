@@ -390,7 +390,7 @@ export class OracleService {
 
     // Add self-tagging and response instructions
     const selfResponseInstructions = this.getSelfResponseInstructions(currentAgent, recentMessages);
-    const continuityInstructions = this.getContinuityInstructions(previousAgent, currentAgent, recentMessages);
+    const continuityInstructions = this.getContinuityInstructions(previousAgent, recentMessages);
     const topicPrompt = this.getCurrentTopicPrompt();
     
     // Add variety to prevent repetition
@@ -490,7 +490,7 @@ Continue this oracle debate with contextual awareness, self-reflection, and natu
     }
   }
 
-  private getContinuityInstructions(previousAgent: string, currentAgent: string, recentMessages: OracleMessage[]): string {
+  private getContinuityInstructions(previousAgent: string, recentMessages: OracleMessage[]): string {
     const messageCount = recentMessages.length;
 
     // Different continuity strategies based on conversation state
