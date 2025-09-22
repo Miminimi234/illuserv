@@ -9,7 +9,6 @@ import grokRoutes from './api/grokRoutes';
 import adminRoutes from './api/adminRoutes';
 import analyticsRoutes from './api/analyticsRoutes';
 import oracleRoutes from './api/oracleRoutes';
-import heliusRoutes from './api/heliusRoutes';
 import adminDashboardRoute from './routes/adminDashboard';
 import { WebSocketService } from './api/websocket';
 import { logger } from './utils/logger';
@@ -250,7 +249,6 @@ app.use('/api/grok', grokRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/oracle', oracleRoutes);
-app.use('/api/helius', heliusRoutes);
 
 // Admin dashboard route
 app.use('/admin-dashboard', adminDashboardRoute);
